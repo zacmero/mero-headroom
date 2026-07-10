@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-port="${MERO_HEADROOM_PORT:-18994}"
-base_url="http://127.0.0.1:${port}/v1"
 mode="${MERO_HEADROOM_MODE:-token}"
+if [ "${1:-}" = "cache" ]; then
+  mode="cache"
+  shift
+fi
+
+if [ "$mode" = "cache" ]; then
+  default_port=18995
+else
+  default_port=18994
+fi
+
+port="${MERO_HEADROOM_PORT:-$default_port}"
+base_url="http://127.0.0.1:${port}/v1"
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom"
-log_file="$log_dir/proxy-${port}.log"
+log_file="$log_dir/proxy-${mode}-${port}.log"
 
 proxy_ready() {
   curl -fsS --max-time 1 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
@@ -13,7 +24,9 @@ proxy_ready() {
 
 if ! proxy_ready; then
   mkdir -p "$log_dir"
-  HEADROOM_TELEMETRY=off HEADROOM_MODE="$mode" headroom proxy --port "$port" >>"$log_file" 2>&1 &
+  setsid env HEADROOM_TELEMETRY=off HEADROOM_MODE="$mode" \
+    headroom proxy --port "$port" --mode "$mode" \
+    </dev/null >>"$log_file" 2>&1 &
   for _ in $(seq 1 30); do
     sleep 1
     proxy_ready && break
