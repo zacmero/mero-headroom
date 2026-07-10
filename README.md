@@ -31,7 +31,7 @@ rtk bash scripts/check-live-state.sh
 `check-live-state.sh` is read-only. It reports provider routing and session
 index counts without changing either.
 
-## Next milestones
+## Next milestones:
 
 1. Capture an isolated Codex 0.144.1 resume-picker regression.
 2. Prototype a provider-preserving WebSocket route without changing live state.
