@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-port="${MERO_HEADROOM_PORT:-18992}"
+port="${MERO_HEADROOM_PORT:-18994}"
 base_url="http://127.0.0.1:${port}/v1"
+mode="${MERO_HEADROOM_MODE:-token}"
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom"
 log_file="$log_dir/proxy-${port}.log"
 
@@ -12,7 +13,7 @@ proxy_ready() {
 
 if ! proxy_ready; then
   mkdir -p "$log_dir"
-  HEADROOM_TELEMETRY=off headroom proxy --port "$port" >>"$log_file" 2>&1 &
+  HEADROOM_TELEMETRY=off HEADROOM_MODE="$mode" headroom proxy --port "$port" >>"$log_file" 2>&1 &
   for _ in $(seq 1 30); do
     sleep 1
     proxy_ready && break
