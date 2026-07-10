@@ -1,0 +1,13 @@
+# Redacted reference only. Do not put credentials in this repository.
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+
+[tui]
+theme = "dracula"
+status_line = ["model-with-reasoning", "current-dir", "model", "project-name", "git-branch", "weekly-limit", "five-hour-limit"]
+pet = "disabled"
+status_line_use_colors = true
+
+[mcp_servers.headroom]
+command = "/home/USER/.local/bin/headroom"
+args = ["mcp", "serve"]

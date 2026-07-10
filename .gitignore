@@ -1,0 +1,7 @@
+.work/
+.env
+*.log
+*.sqlite
+*.sqlite-*
+*.jsonl
+!fixtures/*.jsonl
