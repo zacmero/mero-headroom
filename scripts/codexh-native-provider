@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+port="${MERO_HEADROOM_PORT:-18992}"
+base_url="http://127.0.0.1:${port}/v1"
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom"
+log_file="$log_dir/proxy-${port}.log"
+
+proxy_ready() {
+  curl -fsS --max-time 1 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
+}
+
+if ! proxy_ready; then
+  mkdir -p "$log_dir"
+  HEADROOM_TELEMETRY=off headroom proxy --port "$port" >>"$log_file" 2>&1 &
+  for _ in $(seq 1 30); do
+    sleep 1
+    proxy_ready && break
+  done
+fi
+
+if ! proxy_ready; then
+  printf 'Headroom proxy did not start. Log: %s\n' "$log_file" >&2
+  exit 1
+fi
+
+# Keep built-in provider identity. No config, session, or SQLite mutation.
+exec codex \
+  -c 'model_provider="openai"' \
+  -c "openai_base_url=\"$base_url\"" \
+  -c "mcp_servers.headroom.env.HEADROOM_PROXY_URL=\"$base_url\"" \
+  "$@"

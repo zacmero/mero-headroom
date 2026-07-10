@@ -24,12 +24,24 @@ rewrite global `~/.codex/config.toml` while a raw Codex client is open.
 
 Any strategy that cannot meet those requirements stays in the lab.
 
-## Candidate directions
+## Validated direction
 
-1. Provider-preserving transport: validate whether Codex can proxy both HTTP
-   and WebSocket traffic while retaining the built-in `openai` provider.
-2. Upstream fix: track Codex support for provider-agnostic session discovery.
-3. Isolated runtime: separate Headroom state/config with an explicitly tested,
-   read-only view of canonical session data.
+Codex 0.144.1 can route through Headroom while preserving the built-in `openai`
+provider when launched with temporary overrides:
+
+```text
+model_provider = "openai"
+openai_base_url = "http://127.0.0.1:<port>/v1"
+```
+
+An ephemeral live probe through Headroom succeeded with `provider: openai` and
+left the live config hash and thread count unchanged. This avoids the custom
+provider session-discovery failure.
+
+## Remaining work
+
+1. Validate long interactive resume and Headroom retrieval on copied fixtures.
+2. Add shared proxy lifecycle management for parallel wrapped projects.
+3. Track Codex support for provider-agnostic session discovery.
 
 The existing provider-retag workaround is not an acceptable production design.

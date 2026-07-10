@@ -1,4 +1,5 @@
 .work/
+.serena/
 .env
 *.log
 *.sqlite

@@ -21,10 +21,16 @@ The first regression test runs Headroom against a temporary `CODEX_HOME`. It
 documents the current behavior: the wrapper rewrites config and SQLite provider
 tags but does not rewrite session JSONL metadata.
 
+`scripts/codexh-native-provider` is the replacement under test. It starts or
+reuses a local proxy but launches Codex with temporary CLI overrides that keep
+the built-in `openai` provider. No `headroom wrap codex`; no edits to
+`~/.codex/config.toml`, `state_*.sqlite`, or `sessions/**/*.jsonl`.
+
 ## Commands
 
 ```bash
 rtk bash tests/test-headroom-wrap-mutation.sh
+rtk bash tests/test-native-provider-probe.sh
 rtk bash scripts/check-live-state.sh
 ```
 
