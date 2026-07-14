@@ -36,7 +36,9 @@ Show direct per-proxy Codex WebSocket metrics:
 codexh savings
 ```
 
-`codexh savings` reports three independent values:
+`codexh savings` reports the baseline values below plus savings rate, coverage, latency, and the newest matching fail-open error from the proxy log.
+
+Headroom's `/stats` endpoint exposes only an aggregate failure count. `codexh savings` therefore looks for the newest matching error in the existing proxy process log; if no entry remains (for example, after a proxy restart), the cause cannot be reconstructed from that counter alone. It does not enable full message logging.
 
 - `Codex WS compression`: tokens actually removed from tool-result context.
 - `frames`: applied compression frames and failed/fail-open frames.
@@ -45,6 +47,8 @@ codexh savings
 An example such as `10,515 saved / 40,895 attempted | frames: 29 applied, 0 failed` means Headroom removed 10,515 tokens from 40,895 eligible tool-result tokens. That is working compression.
 
 ## Modes
+
+`cache` mode is about upstream provider prompt-cache reuse, not “compressing the cache”: it freezes the previously forwarded prefix and compresses only an append-only new delta. Both modes still retain Headroom's ordinary local semantic cache unless `--no-cache` is used.
 
 | Command | Mode | Proxy port | Intended use |
 | --- | --- | --- | --- |
