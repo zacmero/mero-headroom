@@ -1,0 +1,53 @@
+--- home/zacmero/.local/share/uv/tools/headroom-ai/lib/python3.13/site-packages/headroom/proxy/handlers/openai.py
++++ home/zacmero/.local/share/uv/tools/headroom-ai/lib/python3.13/site-packages/headroom/proxy/handlers/openai.py
+@@ -72,7 +72,12 @@
+ _OPENAI_RESPONSES_UNIT_CACHE_INIT_LOCK = threading.RLock()
+ _OPENAI_RESPONSES_UNIT_EXECUTOR_LOCK = threading.RLock()
+ _OPENAI_RESPONSES_UNIT_EXECUTOR: ThreadPoolExecutor | None = None
+-_CODEX_WS_COMPRESSION_TIMEOUT_SECONDS = 5.0
++try:
++    _CODEX_WS_COMPRESSION_TIMEOUT_SECONDS = float(
++        os.environ.get("HEADROOM_CODEX_WS_COMPRESSION_TIMEOUT_SECONDS", "5")
++    )
++except ValueError:
++    _CODEX_WS_COMPRESSION_TIMEOUT_SECONDS = 5.0
+ 
+ 
+ def _codex_ws_compression_timeout_seconds() -> float:
+@@ -1178,6 +1183,20 @@
+                 output = item.get("output")
+                 if isinstance(output, str):
+                     return output, ("output", None)
++                # Codex v0.144+ sends custom_tool_call_output.output as an
++                # array of input_text parts. Compress only its largest text
++                # part and retain all surrounding protocol data verbatim.
++                if isinstance(output, list):
++                    text_parts = [
++                        (idx, part.get("text"))
++                        for idx, part in enumerate(output)
++                        if isinstance(part, dict)
++                        and part.get("type") == "input_text"
++                        and isinstance(part.get("text"), str)
++                    ]
++                    if text_parts:
++                        idx, text = max(text_parts, key=lambda part: len(part[1]))
++                        return text, ("output_input_text", idx)
+             return None
+ 
+         def _set_slot_text(
+@@ -1188,6 +1207,15 @@
+             kind, _ = slot
+             if kind == "output":
+                 item["output"] = replacement
++            elif kind == "output_input_text":
++                _, index = slot
++                output = item.get("output")
++                if (
++                    isinstance(output, list)
++                    and isinstance(index, int)
++                    and isinstance(output[index], dict)
++                ):
++                    output[index]["text"] = replacement
+ 
+         headroom_retrieve_call_ids: set[str] = set()
+         # Map each Responses tool call to its name so that outputs belonging to

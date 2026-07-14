@@ -10,13 +10,17 @@ fi
 if [ "$mode" = "cache" ]; then
   default_port=18995
 else
-  default_port=18994
+  default_port=18996
 fi
 
 port="${MERO_HEADROOM_PORT:-$default_port}"
 base_url="http://127.0.0.1:${port}/v1"
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom"
 log_file="$log_dir/proxy-${mode}-${port}.log"
+patcher="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/apply-headroom-codex-array-patch"
+
+# Headroom 0.31.0 needs this guarded Codex v0.144 array-output compatibility patch.
+"$patcher"
 
 proxy_ready() {
   curl -fsS --max-time 1 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
@@ -25,7 +29,9 @@ proxy_ready() {
 if ! proxy_ready; then
   mkdir -p "$log_dir"
   setsid env HEADROOM_TELEMETRY=off HEADROOM_MODE="$mode" \
+    HEADROOM_CODEX_WS_COMPRESSION_TIMEOUT_SECONDS=15 \
     headroom proxy --port "$port" --mode "$mode" \
+      --intercept-tool-results --code-aware \
     </dev/null >>"$log_file" 2>&1 &
   for _ in $(seq 1 30); do
     sleep 1

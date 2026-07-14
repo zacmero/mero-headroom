@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+target="$HOME/.local/share/uv/tools/headroom-ai/lib/python3.13/site-packages/headroom/proxy/handlers/openai.py"
+patch_file="$repo_dir/patches/headroom-0.31.0-codex-array-output.patch"
+
+if ! headroom --version | grep -q '0.31.0'; then
+  printf 'Refusing patch: this patch is pinned to Headroom 0.31.0.\n' >&2
+  exit 2
+fi
+
+if rg -q 'Codex v0\.144\+ sends custom_tool_call_output\.output' "$target"; then
+  printf 'Headroom Codex array-output compatibility patch already applied.\n'
+  exit 0
+fi
+
+(cd / && patch --forward --batch -p0 < "$patch_file")
+printf 'Applied Headroom Codex array-output compatibility patch.\n'
