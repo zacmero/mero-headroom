@@ -48,5 +48,7 @@ fi
 exec codex \
   -c 'model_provider="openai"' \
   -c "openai_base_url=\"$base_url\"" \
+  -c 'mcp_servers.headroom.command="headroom"' \
+  -c 'mcp_servers.headroom.args=["mcp","serve"]' \
   -c "mcp_servers.headroom.env.HEADROOM_PROXY_URL=\"$base_url\"" \
   "$@"

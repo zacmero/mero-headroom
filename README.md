@@ -91,6 +91,42 @@ Do not bypass the refusal or remove the version check. An update can replace the
 4. Verify a large JSON or tool-result request yields nonzero `Codex WS compression` with zero failed frames.
 5. Only then use `codexh` for production sessions.
 
+## Install on another machine
+
+Requirements: Git, Bash, RTK, `uv`, the Codex CLI, and a Python environment supported by Headroom.
+
+```bash
+rtk git clone https://github.com/zacmero/mero-headroom.git /projects/mero-headroom
+cd /projects/mero-headroom
+rtk uv tool install --force 'headroom-ai[proxy]==0.31.0'
+rtk bash scripts/apply-headroom-codex-array-patch
+rtk mkdir -p ~/.local/bin
+rtk ln -sfn /projects/mero-headroom/scripts/codex-headroom ~/.local/bin/codex-headroom
+rtk ln -sfn /projects/mero-headroom/scripts/codexh-savings ~/.local/bin/codexh-savings
+```
+
+Add this function to `~/.bashrc`, then start a new shell:
+
+```bash
+codexh() {
+  if [ "${1:-}" = "savings" ]; then
+    shift
+    command ~/.local/bin/codexh-savings "$@"
+  else
+    command ~/.local/bin/codex-headroom "$@"
+  fi
+}
+```
+
+The launcher resolves its real repository path through symlinks, discovers the installed Headroom package under `~/.local/share/uv/tools`, pins and checks Headroom `0.31.0`, and starts every proxy with `HEADROOM_TELEMETRY=off`. Paths may differ; update the symlink targets accordingly. Do not run `headroom wrap codex` or overwrite `~/.codex/config.toml`.
+
+Verify with an isolated call and the live counters:
+
+```bash
+codexh exec --ephemeral --skip-git-repo-check "Reply with exactly: ok"
+codexh savings
+```
+
 ## Verification
 
 Run repository checks through RTK:
