@@ -24,6 +24,16 @@ Start wrapped Codex in cache mode:
 codexh cache
 ```
 
+Opt into the aggressive 90% savings target for a new session:
+
+```bash
+codexh 90%
+```
+
+Plain `codexh` keeps the original default profile. See
+[docs/AGENT_90_PROFILE.md](docs/AGENT_90_PROFILE.md) for safeguards,
+shared-session behavior, usage, and restart rules.
+
 Start raw Codex with no Headroom proxy:
 
 ```bash

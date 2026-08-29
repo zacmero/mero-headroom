@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ports="${MERO_HEADROOM_PORTS:-18994 18996 18995}"
+ports="${MERO_HEADROOM_PORTS:-18994 18996 18998 18995}"
 state_dir="${MERO_HEADROOM_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom}"
 curl_bin="${MERO_HEADROOM_CURL_BIN:-curl}"
 stats_timeout="${MERO_HEADROOM_STATS_TIMEOUT_SECONDS:-5}"
@@ -15,6 +15,7 @@ for port in $ports; do
 
   case "$port" in
     18996) mode="token" ;;
+    18998) mode="token-90%" ;;
     18995) mode="cache" ;;
     *) mode="unknown" ;;
   esac
@@ -60,4 +61,4 @@ for port in $ports; do
   fi
 done
 
-[ "$found" -eq 1 ] || printf '%s\n' 'No reachable Headroom proxy on ports 18994, 18996, or 18995.'
+[ "$found" -eq 1 ] || printf '%s\n' 'No reachable Headroom proxy on ports 18994, 18996, 18998, or 18995.'
