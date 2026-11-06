@@ -20,6 +20,8 @@ HEADROOM_ACCURACY_GUARD=strict
 HEADROOM_COMPRESS_SYSTEM_MESSAGES=1
 HEADROOM_COMPRESS_USER_MESSAGES=1
 HEADROOM_FORCE_KOMPRESS=1
+HEADROOM_KOMPRESS_MAX_TOKENS=4000
+HEADROOM_COMPRESSION_DEADLINE_MS=8000
 HEADROOM_TARGET_RATIO=0.10
 HEADROOM_MAX_ITEMS=8
 HEADROOM_MIN_TOKENS=120
@@ -30,6 +32,12 @@ HEADROOM_CODEX_WS_COMPRESSION_TIMEOUT_SECONDS=15
 
 Eligible compressible material targets a 10% retained size. Analysis and the
 two newest messages remain protected, and compression fails open on timeout.
+Blocks above approximately 4,000 tokens use the native reducer instead of ML.
+Smaller ML jobs have an eight-second cooperative chunk deadline; their remaining
+tail is preserved when the deadline expires. A single inference chunk cannot be
+preempted, so the deadline is a safeguard rather than a hard CPU-time guarantee.
+ONNX uses two intra-op threads and one inter-op thread. These limits can reduce
+large-prose savings compared with unbounded ML execution.
 
 ## Process isolation
 

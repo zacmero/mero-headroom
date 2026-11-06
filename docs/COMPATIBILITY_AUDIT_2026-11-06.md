@@ -46,3 +46,14 @@ Upstream now handles array-form output and newer Codex tool representations itse
 Current [OpenAI WebSocket documentation](https://developers.openai.com/api/docs/guides/websocket-mode) describes incremental inputs and multiplexed streams. That increases the importance of testing stream/session boundaries rather than assuming an old payload patch covers every newer Codex behavior.
 
 Recommendation: retain the validated runtime while recovering operation; migrate upstream in isolation after resolving its interception rollout gate. Do not infer subscription quota savings from compression or provider cache counters.
+
+## Deployment follow-up
+
+The fixes were committed and pulled onto the VM. The default service received
+the tracked CPU environment drop-in. Both default and aggressive proxies were
+restarted while all twelve pre-existing Codex PIDs remained alive. The restarted
+aggressive proxy initially compressed a log probe but recorded one new leaked
+worker. Thread limits alone were therefore insufficient. The aggressive launcher
+now gates ML blocks at approximately 4,000 tokens and sets an eight-second
+cooperative deadline, retaining native reduction for larger inputs. The outer
+WebSocket compression timeout remains 15 seconds.
