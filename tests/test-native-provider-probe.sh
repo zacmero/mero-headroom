@@ -8,7 +8,7 @@ threads_before="$(sqlite3 "$HOME/.codex/state_5.sqlite" 'SELECT COUNT(*) FROM th
 sessions_before="$(find "$HOME/.codex/sessions" -type f -name '*.jsonl' | wc -l)"
 
 MERO_HEADROOM_PORT="$port" "$repo_root/scripts/codexh-native-provider" \
-  exec --ephemeral --skip-git-repo-check -m gpt-5.6-terra \
+  exec --ephemeral --skip-git-repo-check \
   'Reply with exactly: native-provider-test-ok' | grep -qx 'native-provider-test-ok'
 
 config_after="$(sha256sum "$HOME/.codex/config.toml" | awk '{print $1}')"

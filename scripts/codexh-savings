@@ -17,6 +17,7 @@ for port in $ports; do
     18996) mode="token" ;;
     18998) mode="token-90%" ;;
     18995) mode="cache" ;;
+    18994) mode="token" ;;
     *) mode="unknown" ;;
   esac
 
@@ -50,7 +51,7 @@ for port in $ports; do
     failure=""
     for log_file in "$state_dir/proxy-${mode}-${port}.log" "$state_dir/proxy-${port}.log"; do
       [ -f "$log_file" ] || continue
-      failure="$($rg_bin -i -S 'WS /v1/responses .*compression (failed|timed out)|WS /v1/responses .*failed; forwarding original' "$log_file" 2>/dev/null | tail -n 1)"
+      failure="$($rg_bin -i -S 'WS /v1/responses .*compression (failed|timed out)|WS /v1/responses .*failed; forwarding original' "$log_file" 2>/dev/null | tail -n 1 || true)"
       [ -n "$failure" ] && break
     done
     if [ -n "$failure" ]; then

@@ -66,7 +66,11 @@ An example such as `10,515 saved / 40,895 attempted | frames: 29 applied, 0 fail
 | `codexh cache` | `cache` | `18995` | Prefer stable provider prefixes and cache reuse. |
 | `codex` | none | none | Raw stable fallback; no Headroom traffic. |
 
-The launcher starts a proxy only when its selected port is not already healthy. Multiple `codexh` processes can share the matching local proxy without provider-name changes or session-index rewriting.
+The launcher starts a proxy only when its selected port is not already healthy. Startup is serialized with `flock` so simultaneous tabs cannot race to bind the same port. Health checks allow five seconds. If the default token port `18996` is occupied but unresponsive, new launches use recovery port `18994`; existing clients retain their original port. An occupied, unhealthy explicit port (or recovery port) fails with a diagnostic instead of spawning a competing proxy. Inspect ownership with `rtk ss -ltnp` before restarting any process.
+
+Ordinary token/cache proxies set `HEADROOM_DISABLE_KOMPRESS_OPENAI=1` to avoid expensive ML inference on Codex traffic. Native log/JSON/code compression remains enabled. Numerical runtimes are limited to two threads and tokenizer parallelism is disabled. The explicit `90%` profile retains its heavier ML behavior. These settings apply when starting a proxy; reusing an existing proxy does not change its environment.
+
+For an existing `mero-headroom-token.service`, link `config/proxy-default.service.conf` as `~/.config/systemd/user/mero-headroom-token.service.d/cpu.conf`, then run `systemctl --user daemon-reload`. The drop-in takes effect on the next service restart. Restarting a proxy leaves Codex processes alive but disconnects its clients; an in-flight turn may need retrying. ONNX uses two intra-op threads and one inter-op thread, including in the aggressive profile launched by `codexh 90%`.
 
 ## How It Works
 
@@ -154,7 +158,7 @@ codexh savings
 headroom --version
 ```
 
-Current supported baseline: Codex CLI `0.144.1` and Headroom `0.31.0`.
+Validated on 2026-11-06: Codex CLI `0.166.0` with the patched installed Headroom `0.31.0`. See [the compatibility audit](docs/COMPATIBILITY_AUDIT_2026-11-06.md) before upgrading Headroom.
 
 ## Repository State
 

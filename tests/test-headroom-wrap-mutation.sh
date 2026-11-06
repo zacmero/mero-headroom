@@ -16,8 +16,10 @@ SQL
 
 CODEX_HOME="$scratch" headroom wrap codex --port 18990 --no-proxy --no-mcp --no-tokensave --help >/dev/null
 
-grep -q 'model_provider = "headroom"' "$scratch/config.toml"
-test "$(sqlite3 "$scratch/state_1.sqlite" "SELECT model_provider FROM threads;")" = 'headroom'
+# Current installed builds treat --help as read-only. This does not establish
+# that an actual wrap is session-safe; production must still use our launcher.
+cmp -s "$scratch/config.toml" "$repo_root/config/codex.raw.template.toml"
+test "$(sqlite3 "$scratch/state_1.sqlite" "SELECT model_provider FROM threads;")" = 'openai'
 grep -q '"model_provider":"openai"' "$scratch/sessions/2026/01/01/fixture.jsonl"
 
 CODEX_HOME="$scratch" headroom unwrap codex --port 18990 --no-stop-proxy >/dev/null
@@ -25,4 +27,4 @@ CODEX_HOME="$scratch" headroom unwrap codex --port 18990 --no-stop-proxy >/dev/n
 cmp -s "$scratch/config.toml" "$repo_root/config/codex.raw.template.toml"
 test "$(sqlite3 "$scratch/state_1.sqlite" "SELECT model_provider FROM threads;")" = 'openai'
 
-printf '%s\n' 'PASS: Headroom mutations are confined to temporary config/index fixtures.'
+printf '%s\n' 'PASS: wrap help and unwrap leave isolated fixture config/index unchanged.'
