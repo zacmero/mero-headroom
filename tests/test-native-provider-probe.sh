@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-port=18993
+port="${MERO_HEADROOM_PORT:-18993}"
 config_before="$(sha256sum "$HOME/.codex/config.toml" | awk '{print $1}')"
 threads_before="$(sqlite3 "$HOME/.codex/state_5.sqlite" 'SELECT COUNT(*) FROM threads;')"
 sessions_before="$(find "$HOME/.codex/sessions" -type f -name '*.jsonl' | wc -l)"

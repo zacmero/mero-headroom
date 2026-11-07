@@ -25,7 +25,7 @@ Maintain a session-safe Headroom integration for Codex CLI. The primary invarian
 - Default mode is `token` on port `18996`.
 - `codexh cache` uses `cache` mode on port `18995`.
 - Proxies launched by this repository must set `HEADROOM_TELEMETRY=off`.
-- The active launcher uses `--intercept-tool-results`, `--code-aware`, and `HEADROOM_CODEX_WS_COMPRESSION_TIMEOUT_SECONDS=15`.
+- Production uses the versioned `~/.local/share/mero-headroom/runtime-0.43.1` runtime with `--code-aware`. Core Responses compression works on stable without the canary-only `--intercept-tool-results` flag. The legacy 0.31.0 rollback path retains that flag and its pinned patch. Keep telemetry off and the configured 15-second deadline where supported.
 
 Provider identity must remain `openai` in both raw and wrapped sessions. This prevents the session resume list from splitting by provider.
 

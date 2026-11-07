@@ -1,5 +1,28 @@
 # Mero Headroom
 
+## Headroom 0.43.1 runtime
+
+The launcher accepts exactly Headroom `0.31.0` or `0.43.1`. The former uses
+our guarded array patch and tool-result interceptor flag. The latter uses
+upstream array handling and stable core Responses compression without enabling
+the canary-only file-read interceptors. Unknown versions fail closed.
+
+Install the candidate alongside the existing runtime:
+
+```bash
+rtk uv venv ~/.local/share/mero-headroom/runtime-0.43.1
+rtk uv pip install --python ~/.local/share/mero-headroom/runtime-0.43.1/bin/python 'headroom-ai[proxy,code]==0.43.1'
+MERO_HEADROOM_BIN="$HOME/.local/share/mero-headroom/runtime-0.43.1/bin/headroom" MERO_HEADROOM_PORT=18991 codexh
+```
+
+Use a separate port: reusing an existing healthy port reuses its running version
+and settings. `MERO_HEADROOM_BIN` also selects the process-scoped MCP executable.
+The production launcher defaults to the versioned runtime shown above; set
+`MERO_HEADROOM_BIN` explicitly to select a rollback runtime. Initial isolated
+Codex probes on ports `18991` and `18992` applied compression with zero failed
+frames; the provider/session-safety probe passed on `18991`. This does not yet
+establish indefinite sustained-load or general compression accuracy.
+
 Session-safe Headroom integration for OpenAI Codex CLI. The goal is real tool-result compression without changing Codex's built-in `openai` provider identity or touching the session store.
 
 ## Operating Contract

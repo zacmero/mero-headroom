@@ -25,8 +25,20 @@ log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mero-headroom"
 log_file="$log_dir/proxy-${mode}-${port}.log"
 patcher="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/apply-headroom-codex-array-patch"
 
-# Headroom 0.31.0 needs this guarded Codex v0.144 array-output compatibility patch.
-"$patcher"
+headroom_bin="${MERO_HEADROOM_BIN:-$HOME/.local/share/mero-headroom/runtime-0.43.1/bin/headroom}"
+headroom_version="$("$headroom_bin" --version)"
+interceptor_args=()
+case "$headroom_version" in
+  'headroom, version 0.31.0')
+    "$patcher"
+    interceptor_args=(--intercept-tool-results)
+    ;;
+  'headroom, version 0.43.1')
+    # Upstream handles Codex arrays. Stable core compression does not require
+    # the separately gated file-read interceptors.
+    ;;
+  *) printf 'Unsupported Headroom version: %s\n' "$headroom_version" >&2; exit 2 ;;
+esac
 
 proxy_ready() {
   curl -fsS --max-time 5 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
@@ -88,8 +100,8 @@ if ! proxy_ready; then
     )
   fi
   setsid env "${proxy_env[@]}" \
-    headroom proxy --port "$port" --mode "$mode" \
-      --intercept-tool-results --code-aware \
+    "$headroom_bin" proxy --port "$port" --mode "$mode" \
+      "${interceptor_args[@]}" --code-aware \
     9>&- </dev/null >>"$log_file" 2>&1 &
   for _ in $(seq 1 30); do
     sleep 1
@@ -109,7 +121,7 @@ exec 9>&-
 exec codex \
   -c 'model_provider="openai"' \
   -c "openai_base_url=\"$base_url\"" \
-  -c 'mcp_servers.headroom.command="headroom"' \
+  -c "mcp_servers.headroom.command=\"$headroom_bin\"" \
   -c 'mcp_servers.headroom.args=["mcp","serve"]' \
   -c "mcp_servers.headroom.env.HEADROOM_PROXY_URL=\"$base_url\"" \
   "$@"
