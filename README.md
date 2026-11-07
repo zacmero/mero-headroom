@@ -181,7 +181,7 @@ codexh savings
 headroom --version
 ```
 
-Validated on 2026-11-06: Codex CLI `0.166.0` with the patched installed Headroom `0.31.0`. See [the compatibility audit](docs/COMPATIBILITY_AUDIT_2026-11-06.md) before upgrading Headroom.
+Production migrated on 2026-11-06 to the versioned Headroom `0.43.1` runtime on local and VM hosts. Codex `0.166.0` (VM) and `0.167.0` (local) completed production tool-output probes. The old uv-tool `headroom` command remains available as a rollback runtime; `codexh` and its MCP override select the versioned runtime explicitly. See [the compatibility audit](docs/COMPATIBILITY_AUDIT_2026-11-06.md).
 
 ## Repository State
 

@@ -1,5 +1,22 @@
 # Compatibility and CPU incident audit — 2026-11-06
 
+## Final production status
+
+The initial rollout blocker below was resolved: the gated flag enables optional
+file-read interceptors, while stable core Responses compression works without
+it. The launcher now selects the pinned, versioned `0.43.1` runtime on both
+machines. Ordinary and aggressive VM production proxies were migrated without
+stopping any of the twelve pre-existing Codex processes. Their connections could
+be interrupted by proxy restarts.
+
+Isolated provider/session-safety probes passed locally and on the ARM VM before
+promotion. Production probes returned `LOCAL_PRODUCTION_OK` and
+`VM_PRODUCTION_OK`. Local default counters recorded one applied frame, 395 saved
+tokens, and zero failures. VM aggressive counters recorded two applied frames,
+5,638 saved tokens, zero failures, and zero leaked workers after the probes.
+These are focused checks, not a sustained-load or general accuracy guarantee.
+Earlier sections describe the incident and intermediate migration findings.
+
 ## Local incident
 
 Codex was `0.166.0`; the installed Headroom reported `0.31.0` and retained our array-output patch. The owned proxy PID `132074` occupied port `18996` but failed `/livez` and `/health` checks, accumulated queued client connections, and consumed CPU. The launcher treated the failed health check as an absent process, attempted a second bind, and logged `address already in use`.
